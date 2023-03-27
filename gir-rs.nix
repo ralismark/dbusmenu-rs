@@ -1,17 +1,17 @@
 { lib, fetchFromGitHub, rustPlatform }:
 
 rustPlatform.buildRustPackage {
-  pname = "gir_0_15";
-  version = "2022-03-14-unstable";
+  pname = "gir";
+  version = "0.17.1";
 
   src = fetchFromGitHub {
     owner = "gtk-rs";
     repo = "gir";
-    rev = "c8a7a13d2c4d3a57ae646e38a821d57243cf7983";
+    rev = "0.17.1";
     sha256 = "sha256-WpTyT62bykq/uwzBFQXeJ1HxR1a2vKmtid8YAzk7J+Q=";
   };
 
-  cargoSha256 = "sha256-+GewKlrVchUhN0nkSmRlzSU/zT5poFPTNrpBM41HmZw=";
+  cargoSha256 = "sha256-c4CcoiAotWUqqb7lflO/IqSv84JdaM2oJUvBYOVTMcs=";
 
   postPatch = ''
     rm build.rs
