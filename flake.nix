@@ -36,6 +36,8 @@
           overlays = [ self.overlays.default ];
         };
 
+        writeToml = (pkgs.formats.toml {}).generate;
+
         girDirs = let
           patch = ''
             --- a/Dbusmenu-0.4.gir
@@ -79,8 +81,6 @@
             rev = "0.17.2";
             hash = "sha256-p7XvEHxRRUntmKx+KLHUqRxARHNGq3GdTVpTL22fhU8=";
           };
-
-          writeToml = (pkgs.formats.toml {}).generate;
 
           girToml = writeToml "Gir.toml" {
             options = options // {
@@ -236,7 +236,11 @@
           }];
 
           fixup = ''
-            cat ${(pkgs.formats.toml {}).generate "Cargo.toml" {
+            sed -i $out/src/auto/menuitem.rs \
+              -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
+              -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
+
+            cat >$out/Cargo.toml ${writeToml "Cargo.toml" {
               package = {
                 name = "dbusmenu";
                 version = "0.0.1";
@@ -254,11 +258,7 @@
               };
 
               features.dox = ["ffi/dox" "glib/dox"];
-            }} > $out/Cargo.toml
-
-            sed -i $out/src/auto/menuitem.rs \
-              -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
-              -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
+            }}
           '';
         };
 
@@ -311,7 +311,7 @@
             sed -i $out/src/auto/menu.rs \
               -e 's/atk::ImplementorIface, //'
 
-            cat >$out/Cargo.toml ${(pkgs.formats.toml {}).generate "Cargo.toml" {
+            cat >$out/Cargo.toml ${writeToml "Cargo.toml" {
               package = {
                 name = "dbusmenu-gtk3";
                 version = "0.0.1";
