@@ -36,6 +36,34 @@
           overlays = [ self.overlays.default ];
         };
 
+        girDirs = let
+          patch = ''
+            --- a/Dbusmenu-0.4.gir
+            +++ b/Dbusmenu-0.4.gir
+            @@ -2857,7 +2857,7 @@
+                     <doc xml:space="preserve"
+                          filename="menuitem.h"
+                          line="428">Virtual function that appends the strings required to represent this menu item in the menu variant.</doc>
+            -        <type c:type="dbusmenu_menuitem_buildvariant_slot_t"/>
+            +        <type name="menuitem_buildvariant_slot_t" c:type="dbusmenu_menuitem_buildvariant_slot_t"/>
+                   </field>
+                   <field name="handle_event">
+                     <callback name="handle_event">
+            @@ -2910,7 +2910,7 @@
+                           <doc xml:space="preserve"
+                                filename="menuitem.c"
+                                line="1776">Callback to call when the call has returned.</doc>
+            -              <type c:type="dbusmenu_menuitem_about_to_show_cb"/>
+            +              <type name="menuitem_about_to_show_cb" c:type="dbusmenu_menuitem_about_to_show_cb"/>
+                         </parameter>
+                         <parameter name="cb_data"
+                                    transfer-ownership="none"
+          '';
+        in pkgs.runCommand "dbusmenu-gtk3-gir" {} ''
+          cp --no-preserve=all -rL ${pkgs.libdbusmenu-gtk3}/share/gir-1.0 $out
+          patch -p1 -d $out <${builtins.toFile "fix-gir.patch" patch}
+        '';
+
         mkGir = {
           pname,
           version,
@@ -59,8 +87,7 @@
               version = version;
               work_mode = workMode;
               girs_directories = (options.girs_directories or []) ++ [
-                "${./gir}"
-                "${pkgs.libdbusmenu-gtk3}/share/gir-1.0"
+                "${girDirs}"
                 "${gir-files}"
               ];
             };
