@@ -69,6 +69,7 @@
           version,
           workMode,
           options,
+          object ? [],
           fixup ? "",
           ...
         }@attrs: let
@@ -91,11 +92,13 @@
                 "${gir-files}"
               ];
             };
+            object = object;
           };
 
           attrs' = builtins.removeAttrs attrs [
             "options"
             "fixup"
+            "object"
           ];
 
           ifMode = mode: s: if mode == workMode then s else "";
@@ -208,7 +211,6 @@
             generate_safety_asserts = true;
             deprecate_by_min_version = true;
             generate = [
-              "Dbusmenu.Client"
               "Dbusmenu.ClientTypeHandler"
               "Dbusmenu.Menuitem"
               "Dbusmenu.Status"
@@ -222,17 +224,16 @@
               "GLib.DestroyNotify"
               "GLib.Variant"
             ];
-
-            object = [ {
-              name = "Dbusmenu.Client";
-              status = "generate";
-              function = [ {
-                # GStrv is not generated correctly
-                pattern = ".*";
-                ignore = true;
-              } ];
-            }  ];
           };
+
+          object = [{
+            name = "Dbusmenu.Client";
+            status = "generate";
+            function = [{
+              name = "add_type_handler";
+              ignore = true; # takes a callback but no associated user data
+            }];
+          }];
 
           fixup = ''
             cat ${(pkgs.formats.toml {}).generate "Cargo.toml" {
@@ -272,7 +273,6 @@
             generate_safety_asserts = true;
             deprecate_by_min_version = true;
             generate = [
-              "DbusmenuGtk3.Client"
               "DbusmenuGtk3.Menu"
             ];
             manual = [
@@ -291,6 +291,18 @@
               "Gtk.Widget"
             ];
           };
+
+          object = [{
+            name = "DbusmenuGtk3.Client";
+            status = "generate";
+            function = [{
+              name = "newitem_base";
+              parameter = [{
+                name = "parent";
+                nullable = true;
+              }];
+            }];
+          }];
 
           fixup = ''
             sed -i $out/src/**/menu.rs -e 's/gobject/glib::object/g'
