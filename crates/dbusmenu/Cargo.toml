@@ -1,0 +1,16 @@
+[package]
+name = "dbusmenu"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.docs.rs]
+features = ["dox"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dbusmenu-glib = { path = "../../result/dbusmenu-glib" }
+dbusmenu-gtk3 = { path = "../../result/dbusmenu-gtk3" }
+
+[features]
+dox = ["dbusmenu-glib/dox", "dbusmenu-gtk3/dox"]

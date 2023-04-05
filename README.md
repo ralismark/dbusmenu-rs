@@ -1,8 +1,15 @@
 # dbusmenu-rs
 
-This repository contains safe Rust bindings for [libdbusmenu](https://github.com/AyatanaIndicators/libdbusmenu).
+This repository contains safe Rust bindings for [libdbusmenu](https://github.com/AyatanaIndicators/libdbusmenu) that work with the [gtk-rs ecosystem](https://gtk-rs.org).
+For more information, including examples, see the [libdbusmenu repo](https://github.com/AyatanaIndicators/libdbusmenu).
 
-In order to make it easier to make changes, the bindings and subsequent patches to them are generated using Nix, and are currently not committed to this repo.
-To generate them, run `nix build`, which will create a (symlink to a) directory `result` containing the crates.
+## Code Generation
+
+Bindings are generated using [gir](https://github.com/gtk-rs/gir).
+
+In order to manage all the steps and fixes involved in code generation, they are built using Nix and symlinked to `result`.
+To generate them yourself, run `nix build`.
+
+## License
 
 This project licensed under LGPLv3.
