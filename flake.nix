@@ -96,7 +96,7 @@
         license = "LGPL-3.0-only";
         homepage = "https://github.com/ralismark/dbusmenu-rs";
         repository = "https://github.com/ralismark/dbusmenu-rs";
-        readme = "../../README.md";
+        readme = "${./README.md}";
         keywords = ["gtk-rs"];
         categories = ["api-bindings" "gui"];
       };
