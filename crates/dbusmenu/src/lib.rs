@@ -19,8 +19,7 @@ pub use dbusmenu_gtk3::{
     Menu as GtkMenu,
 };
 
-/// Traits intended for blanked imports
-pub mod prelude {
+pub mod traits {
     #[doc(no_inline)]
     pub use dbusmenu_gtk3::traits::*;
     #[doc(no_inline)]
@@ -30,4 +29,9 @@ pub mod prelude {
     // as a different alias
     #[doc(no_inline)]
     pub use dbusmenu_gtk3::traits::ClientExt as GtkClientExt;
+}
+
+/// Traits intended for blanked imports
+pub mod prelude {
+    pub use crate::traits::*;
 }

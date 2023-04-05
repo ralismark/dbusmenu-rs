@@ -5,7 +5,6 @@
   gir-rs,
   gir-files,
   rustdoc-stripper,
-
   defaultGirDirs ? [gir-files], # directories to always search for .gir files in
 }: {
   pname,
@@ -92,6 +91,11 @@
     # doc generation
     (lib.optionalString (girWorkMode == "normal") ''
       ${gir-rs}/bin/gir -c ${girToml'} -m doc --doc-target-path $out/docs.md -o $out
+
+      # clean up docs a bit
+      sed -i $out/docs.md \
+        -e '/Return value:/s/^    //'
+
       ${rustdoc-stripper}/bin/rustdoc-stripper -g -o $out/docs.md -d $out
     '')
 
