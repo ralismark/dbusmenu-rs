@@ -14,6 +14,7 @@
     {
       overlays.default = self: super: {
         gir-rs = self.callPackage ./gir-rs.nix {};
+        rustdoc-stripper = self.callPackage ./rustdoc-stripper.nix {};
 
         libdbusmenu-gtk3 = super.libdbusmenu-gtk3.overrideAttrs (prev: {
           patches =
@@ -101,6 +102,7 @@
       formatter = pkgs.alejandra;
 
       packages.gir-rs = pkgs.gir-rs;
+      packages.rustdoc-stripper = pkgs.rustdoc-stripper;
 
       packages.dbusmenu-glib-sys = buildGir {
         pname = "Dbusmenu";
@@ -291,6 +293,9 @@
 
           # interface does not exist
           sed -i $out/src/auto/menu.rs -e 's/atk::ImplementorIface, //'
+
+          # for docs
+          printf 'use %s;\n' dbusmenu_glib gtk >> $out/src/lib.rs
         '';
       };
 

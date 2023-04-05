@@ -4,6 +4,8 @@
   formats,
   gir-rs,
   gir-files,
+  rustdoc-stripper,
+
   defaultGirDirs ? [gir-files], # directories to always search for .gir files in
 }: {
   pname,
@@ -91,6 +93,12 @@
       ${gir-rs}/bin/gir -c ${girToml'} -m ${girWorkMode} -o $out
     ''
 
+    # doc generation
+    (lib.optionalString (girWorkMode == "normal") ''
+      ${gir-rs}/bin/gir -c ${girToml'} -m doc --doc-target-path $out/docs.md -o $out
+      ${rustdoc-stripper}/bin/rustdoc-stripper -g -o $out/docs.md -d $out
+    '')
+
     # built-in fixups
     (lib.optionalString (girWorkMode == "sys") ''
       # delete #[link] attributes, since they point into /nix/store. use pkg-config instead
@@ -104,6 +112,9 @@
       # generate some default tests
       mkdir -p $out/tests
       printf '%s\n' "#[test]" "fn it_compiles() {}" > $out/tests/it_compiles.rs
+
+      # don't hide documentation
+      sed -i $out/src/auto/mod.rs -e '/#\[doc(hidden)\]/d'
     '')
 
     (lib.optionalString (cargoToml != null) ''
