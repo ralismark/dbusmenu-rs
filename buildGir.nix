@@ -87,27 +87,27 @@
     # initial generation
     ''
       mkdir $out
-      cd $out
-      ${gir-rs}/bin/gir -c ${girToml'} -m ${girWorkMode} -o .
+
+      ${gir-rs}/bin/gir -c ${girToml'} -m ${girWorkMode} -o $out
     ''
 
     # built-in fixups
     (lib.optionalString (girWorkMode == "sys") ''
       # delete #[link] attributes, since they point into /nix/store. use pkg-config instead
-      sed -i src/lib.rs \
+      sed -i $out/src/lib.rs \
         -e '/^#\[link/d'
     '')
 
     (lib.optionalString (girWorkMode == "normal") ''
-      cat ${normal-librs} > src/lib.rs
+      cat ${normal-librs} > $out/src/lib.rs
 
       # generate some default tests
-      mkdir -p tests
-      printf '%s\n' "#[test]" "fn it_compiles() {}" > tests/it_compiles.rs
+      mkdir -p $out/tests
+      printf '%s\n' "#[test]" "fn it_compiles() {}" > $out/tests/it_compiles.rs
     '')
 
     (lib.optionalString (cargoToml != null) ''
-      cat ${writeToml "Cargo.toml" cargoToml} > Cargo.toml
+      cat ${writeToml "Cargo.toml" cargoToml} > $out/Cargo.toml
     '')
 
     # invocation fixups

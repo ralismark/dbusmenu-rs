@@ -117,7 +117,7 @@
         };
 
         fixupPhase = ''
-          sed -e '/icon_paths/s/c_char/glib::GStrv/g' -i src/lib.rs
+          sed -e '/icon_paths/s/c_char/glib::GStrv/g' -i $out/src/lib.rs
         '';
       };
 
@@ -208,7 +208,7 @@
         };
 
         fixupPhase = ''
-          sed -i src/auto/menuitem.rs \
+          sed -i $out/src/auto/menuitem.rs \
             -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
             -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
         '';
@@ -287,11 +287,10 @@
         };
 
         fixupPhase = ''
-          sed -i src/auto/menu.rs -e 's/gobject/glib::object/g'
+          sed -i $out/src/auto/menu.rs -e 's/gobject/glib::object/g'
 
           # interface does not exist
-          sed -i src/auto/menu.rs \
-            -e 's/atk::ImplementorIface, //'
+          sed -i $out/src/auto/menu.rs -e 's/atk::ImplementorIface, //'
         '';
       };
 
