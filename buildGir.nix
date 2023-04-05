@@ -20,10 +20,6 @@
   writeToml = (formats.toml {}).generate;
 
   girToml' = writeToml "Gir.toml" (lib.foldl lib.recursiveUpdate {} [
-    {
-      options.library = pname;
-      options.version = version;
-    }
     girToml
     {
       options.girs_directories =
@@ -104,6 +100,10 @@
       # delete #[link] attributes, since they point into /nix/store. use pkg-config instead
       sed -i $out/src/lib.rs \
         -e '/^#\[link/d'
+
+      # add version
+      # TODO this is a bit brittle
+      sed -i $out/Cargo.toml -e 's/^version = "0.0.1"$/version = "${version}"/'
     '')
 
     (lib.optionalString (girWorkMode == "normal") ''

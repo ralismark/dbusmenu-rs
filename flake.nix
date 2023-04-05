@@ -85,6 +85,9 @@
       };
       lib = pkgs.lib;
 
+      # gtkrs version we target
+      gtkrsVersion = "0.15";
+
       buildGir = args:
         pkgs.buildGir (lib.recursiveUpdate args {
           girToml.crate_name_overrides = {
@@ -94,7 +97,7 @@
             (args.fixupPhase or "")
             (lib.optionalString (args.girWorkMode == "sys") ''
               sed -i $out/Cargo.toml \
-                -e 's/git = ".*"/version = "0.15"/'
+                -e 's/git = ".*"/version = "${gtkrsVersion}"/'
             '')
           ];
         });
@@ -105,11 +108,14 @@
       packages.rustdoc-stripper = pkgs.rustdoc-stripper;
 
       packages.dbusmenu-glib-sys = buildGir {
-        pname = "Dbusmenu";
-        version = "0.4";
+        pname = "dbusmenu-glib-sys";
+        version = "0.1.0";
 
         girWorkMode = "sys";
         girToml.options = {
+          library = "Dbusmenu";
+          version = "0.4";
+
           min_cfg_version = "16";
           single_version_file = true;
           external_libraries = [
@@ -124,11 +130,14 @@
       };
 
       packages.dbusmenu-gtk3-sys = buildGir {
-        pname = "DbusmenuGtk3";
-        version = "0.4";
+        pname = "dbusmenu-gtk3-sys";
+        version = "0.1.0";
 
         girWorkMode = "sys";
         girToml.options = {
+          library = "DbusmenuGtk3";
+          version = "0.4";
+
           min_cfg_version = "16";
           single_version_file = true;
           external_libraries = [
@@ -142,165 +151,215 @@
 
         fixupPhase = ''
           sed -i $out/Cargo.toml \
-            -e '/\[dependencies\]/adbusmenu-glib = { package = "dbusmenu-glib-sys", path = "../dbusmenu-glib-sys" }' \
+            -e '/\[dependencies\]/adbusmenu-glib = { package = "dbusmenu-glib-sys", version = "${packages.dbusmenu-glib-sys.version}", path = "../dbusmenu-glib-sys" }' \
             -e 's/^\(dox = \[\)\(.*\]\)$/\1"dbusmenu-glib\/dox", \2/'
         '';
       };
 
-      packages.dbusmenu-glib = buildGir {
-        pname = "Dbusmenu";
-        version = "0.4";
+      packages.dbusmenu-glib = let
+        pname = "dbusmenu-glib";
+        version = "0.1.0";
+      in
+        buildGir {
+          inherit pname version;
 
-        girWorkMode = "normal";
-        girToml.options = {
-          min_cfg_version = "16";
-          single_version_file = true;
-          generate_safety_asserts = true;
-          deprecate_by_min_version = true;
-          generate = [
-            "Dbusmenu.ClientTypeHandler"
-            "Dbusmenu.Menuitem"
-            "Dbusmenu.Status"
-            "Dbusmenu.TextDirection"
-            "Dbusmenu.menuitem_buildvariant_slot_t"
-            "Dbusmenu.menuitem_about_to_show_cb"
-            "Dbusmenu.MenuitemProxy"
-            "Dbusmenu.Server"
-          ];
-          manual = [
-            "GLib.DestroyNotify"
-            "GLib.Variant"
-          ];
-        };
-        girToml.object = [
-          {
-            name = "Dbusmenu.Client";
-            status = "generate";
-            function = [
-              {
-                name = "add_type_handler";
-                ignore = true; # takes a callback but no associated user data
-              }
+          girWorkMode = "normal";
+          girToml.options = {
+            library = "Dbusmenu";
+            version = "0.4";
+
+            min_cfg_version = "16";
+            single_version_file = true;
+            generate_safety_asserts = true;
+            deprecate_by_min_version = true;
+            generate = [
+              "Dbusmenu.ClientTypeHandler"
+              "Dbusmenu.Menuitem"
+              "Dbusmenu.Status"
+              "Dbusmenu.TextDirection"
+              "Dbusmenu.menuitem_buildvariant_slot_t"
+              "Dbusmenu.menuitem_about_to_show_cb"
+              "Dbusmenu.MenuitemProxy"
+              "Dbusmenu.Server"
             ];
-          }
-        ];
-
-        assertInitialized = false;
-
-        cargoToml = {
-          package = {
-            name = "dbusmenu-glib";
-            version = "0.0.1";
-            edition = "2021";
-
-            metadata.docs.rs.features = ["dox"];
-          };
-
-          lib.name = "dbusmenu_glib";
-          dependencies = {
-            libc = "0.2";
-            ffi = {
-              package = "dbusmenu-glib-sys";
-              path = "../dbusmenu-glib-sys";
-            };
-            glib = "0.15";
-          };
-
-          features.dox = ["ffi/dox" "glib/dox"];
-        };
-
-        fixupPhase = ''
-          sed -i $out/src/auto/menuitem.rs \
-            -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
-            -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
-        '';
-      };
-
-      packages.dbusmenu-gtk3 = buildGir {
-        pname = "DbusmenuGtk3";
-        version = "0.4";
-
-        girWorkMode = "normal";
-        girToml.options = {
-          min_cfg_version = "16";
-          single_version_file = true;
-          generate_safety_asserts = true;
-          deprecate_by_min_version = true;
-          generate = [
-            "DbusmenuGtk3.Menu"
-          ];
-          manual = [
-            "Atk.ImplementorIface"
-            "Dbusmenu.Client"
-            "Dbusmenu.Menuitem"
-            "GObject.InitiallyUnowned"
-            "Gdk.ModifierType"
-            "GdkPixbuf.Pixbuf"
-            "Gtk.AccelGroup"
-            "Gtk.Buildable"
-            "Gtk.Container"
-            "Gtk.Menu"
-            "Gtk.MenuItem"
-            "Gtk.MenuShell"
-            "Gtk.Widget"
-          ];
-        };
-        girToml.object = [
-          {
-            name = "DbusmenuGtk3.Client";
-            status = "generate";
-            function = [
-              {
-                name = "newitem_base";
-                parameter = [
-                  {
-                    name = "parent";
-                    nullable = true;
-                  }
-                ];
-              }
+            manual = [
+              "GLib.DestroyNotify"
+              "GLib.Variant"
             ];
-          }
-        ];
-
-        cargoToml = {
-          package = {
-            name = "dbusmenu-gtk3";
-            version = "0.0.1";
-            edition = "2021";
-
-            metadata.docs.rs.features = ["dox"];
           };
+          girToml.object = [
+            {
+              name = "Dbusmenu.Client";
+              status = "generate";
+              function = [
+                {
+                  name = "add_type_handler";
+                  ignore = true; # takes a callback but no associated user data
+                }
+              ];
+            }
+          ];
 
-          lib.name = "dbusmenu_gtk3";
-          dependencies = {
-            libc = "0.2";
-            ffi = {
-              package = "dbusmenu-gtk3-sys";
-              path = "../dbusmenu-gtk3-sys";
+          assertInitialized = false;
+
+          cargoToml = {
+            package = {
+              name = pname;
+              version = version;
+              edition = "2021";
+
+              metadata.docs.rs.features = ["dox"];
             };
-            dbusmenu-glib = {path = "../dbusmenu-glib";};
-            glib = "0.15";
-            gtk = "0.15";
-            atk = "0.15";
+
+            lib.name = "dbusmenu_glib";
+            dependencies = {
+              libc = "0.2";
+              ffi = {
+                package = "dbusmenu-glib-sys";
+                version = packages.dbusmenu-glib-sys.version;
+                path = "../dbusmenu-glib-sys";
+              };
+              glib = gtkrsVersion;
+            };
+
+            features.dox = ["ffi/dox" "glib/dox"];
           };
 
-          features.dox = ["ffi/dox" "dbusmenu-glib/dox" "glib/dox" "gtk/dox" "atk/dox"];
+          fixupPhase = ''
+            sed -i $out/src/auto/menuitem.rs \
+              -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
+              -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
+          '';
         };
 
-        fixupPhase = ''
-          sed -i $out/src/auto/menu.rs -e 's/gobject/glib::object/g'
+      packages.dbusmenu-gtk3 = let
+        pname = "dbusmenu-gtk3";
+        version = "0.1.0";
+      in
+        buildGir {
+          inherit pname version;
 
-          # interface does not exist
-          sed -i $out/src/auto/menu.rs -e 's/atk::ImplementorIface, //'
+          girWorkMode = "normal";
+          girToml.options = {
+            library = "DbusmenuGtk3";
+            version = "0.4";
 
-          # for docs
-          printf 'use %s;\n' dbusmenu_glib gtk >> $out/src/lib.rs
-        '';
+            min_cfg_version = "16";
+            single_version_file = true;
+            generate_safety_asserts = true;
+            deprecate_by_min_version = true;
+            generate = [
+              "DbusmenuGtk3.Menu"
+            ];
+            manual = [
+              "Atk.ImplementorIface"
+              "Dbusmenu.Client"
+              "Dbusmenu.Menuitem"
+              "GObject.InitiallyUnowned"
+              "Gdk.ModifierType"
+              "GdkPixbuf.Pixbuf"
+              "Gtk.AccelGroup"
+              "Gtk.Buildable"
+              "Gtk.Container"
+              "Gtk.Menu"
+              "Gtk.MenuItem"
+              "Gtk.MenuShell"
+              "Gtk.Widget"
+            ];
+          };
+          girToml.object = [
+            {
+              name = "DbusmenuGtk3.Client";
+              status = "generate";
+              function = [
+                {
+                  name = "newitem_base";
+                  parameter = [
+                    {
+                      name = "parent";
+                      nullable = true;
+                    }
+                  ];
+                }
+              ];
+            }
+          ];
+
+          cargoToml = {
+            package = {
+              name = pname;
+              version = version;
+              edition = "2021";
+
+              metadata.docs.rs.features = ["dox"];
+            };
+
+            lib.name = "dbusmenu_gtk3";
+            dependencies = {
+              libc = "0.2";
+              ffi = {
+                package = "dbusmenu-gtk3-sys";
+                version = packages.dbusmenu-gtk3-sys.version;
+                path = "../dbusmenu-gtk3-sys";
+              };
+              dbusmenu-glib = {
+                version = packages.dbusmenu-glib.version;
+                path = "../dbusmenu-glib";
+              };
+              glib = gtkrsVersion;
+              gtk = gtkrsVersion;
+              atk = gtkrsVersion;
+            };
+
+            features.dox = ["ffi/dox" "dbusmenu-glib/dox" "glib/dox" "gtk/dox" "atk/dox"];
+          };
+
+          fixupPhase = ''
+            sed -i $out/src/auto/menu.rs -e 's/gobject/glib::object/g'
+
+            # interface does not exist
+            sed -i $out/src/auto/menu.rs -e 's/atk::ImplementorIface, //'
+
+            # for docs
+            printf '#[allow(unused)] use %s;\n' dbusmenu_glib gtk >> $out/src/lib.rs
+          '';
+        };
+
+      packages.dbusmenu-cargoToml = (pkgs.formats.toml {}).generate "Cargo.toml" {
+        package = {
+          name = "dbusmenu";
+          version = "0.1.0";
+          edition = "2021";
+
+          metadata.docs.rs.features = ["dox"];
+
+          # crates.io metadata
+          license = "LGPL-3.0-only";
+          description = "Rust bindings for libdbusmenu";
+          homepage = "https://github.com/ralismark/dbusmenu-rs";
+          repository = "https://github.com/ralismark/dbusmenu-rs";
+          readme = "../../README.md";
+          keywords = ["gtk" "gtk-rs" "gnome" "GUI"];
+          categories = ["api-bindings" "gui"];
+        };
+
+        dependencies = {
+          dbusmenu-glib = {
+            version = packages.dbusmenu-glib.version;
+            path = "../../result/dbusmenu-glib";
+          };
+          dbusmenu-gtk3 = {
+            version = packages.dbusmenu-gtk3.version;
+            path = "../../result/dbusmenu-gtk3";
+          };
+        };
+
+        features.dox = ["dbusmenu-glib/dox" "dbusmenu-gtk3/dox"];
       };
 
       packages.default = pkgs.runCommand "dbusmenu-crates" {} ''
         mkdir $out
+        ln -s ${packages.dbusmenu-cargoToml} $out/dbusmenu-Cargo.toml
         ln -s ${packages.dbusmenu-glib-sys} $out/dbusmenu-glib-sys
         ln -s ${packages.dbusmenu-gtk3-sys} $out/dbusmenu-gtk3-sys
         ln -s ${packages.dbusmenu-glib} $out/dbusmenu-glib

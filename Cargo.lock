@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "dbusmenu-glib"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "dbusmenu-glib-sys",
  "glib",
@@ -119,7 +119,7 @@ dependencies = [
 
 [[package]]
 name = "dbusmenu-glib-sys"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -131,7 +131,7 @@ dependencies = [
 
 [[package]]
 name = "dbusmenu-gtk3"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "atk",
  "dbusmenu-glib",
@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "dbusmenu-gtk3-sys"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "dbusmenu-glib-sys",
  "gdk-pixbuf-sys",
