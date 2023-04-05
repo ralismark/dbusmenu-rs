@@ -1,0 +1,13 @@
+[package]
+name = "dbusmenu"
+version = "0.0.0"
+edition = "2021"
+
+# crates.io metadata
+license = "LGPL-3.0-only"
+description = "Reserved: see dbusmenu-glib and dbusmenu-gtk3"
+homepage = "https://github.com/ralismark/dbusmenu-rs"
+repository = "https://github.com/ralismark/dbusmenu-rs"
+readme = "README.md"
+keywords = ["gtk-rs"]
+categories = ["api-bindings", "gui"]
