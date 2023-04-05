@@ -261,7 +261,24 @@
             features.dox = ["ffi/dox" "glib/dox"];
           };
 
-          fixupPhase = ''
+          fixupPhase = let
+            crateDocs = builtins.toFile "lib.rs" ''
+              //! # bindings for glib part of libdbusmenu
+              //!
+              //! Rust bindings for the glib part of [libdbusmenu] that work with the [gtk-rs ecosystem].
+              //!
+              //! By using [`Server`], you can use this crate in desktop applications to expose a menu over DBus.
+              //! For more information, including code examples, see [libdbusmenu].
+              //!
+              //! This crate also provides a UI-framework-independent interface to read them by using [`Client`].
+              //! However, if you are using GTK, it is recommended that you use `dbusmenu-gtk3`, which handles most of the GTK glue required to show it.
+              //!
+              //! [libdbusmenu]: https://github.com/AyatanaIndicators/libdbusmenu
+              //! [gtk-rs ecosystem]: https://gtk-rs.org
+            '';
+          in ''
+            sed -i $out/src/lib.rs -e '0r${crateDocs}'
+
             sed -i $out/src/auto/menuitem.rs \
               -e '/property_set_byte_array/s/value: u8, nelements: usize/values: \&[u8]/' \
               -e '/ffi::dbusmenu_menuitem_property_set_byte_array/s/value, nelements/values.as_ptr(), values.len()/'
@@ -353,14 +370,29 @@
             features.dox = ["ffi/dox" "dbusmenu-glib/dox" "glib/dox" "gtk/dox" "atk/dox"];
           };
 
-          fixupPhase = ''
+          fixupPhase = let
+            crateDocs = builtins.toFile "lib.rs" ''
+              //! # bindings for gtk part of libdbusmenu
+              //!
+              //! Rust bindings for the gtk part of [libdbusmenu] that work with the [gtk-rs ecosystem].
+              //!
+              //! If you are looking to expose a menu over DBus (e.g. for a system tray icon), see [`mod@dbusmenu_glib`].
+              //! This crate provides [`Menu`], a GTK widget which will show the contents of a menu exposed over DBus.
+              //!
+              //! [libdbusmenu]: https://github.com/AyatanaIndicators/libdbusmenu
+              //! [gtk-rs ecosystem]: https://gtk-rs.org
+
+              // for links in docs
+              #[allow(unused)] use dbusmenu_glib;
+              #[allow(unused)] use gtk;
+            '';
+          in ''
+            sed -i $out/src/lib.rs -e '0r${crateDocs}'
+
             sed -i $out/src/auto/menu.rs -e 's/gobject/glib::object/g'
 
             # interface does not exist
             sed -i $out/src/auto/menu.rs -e 's/atk::ImplementorIface, //'
-
-            # for docs
-            printf '#[allow(unused)] use %s;\n' dbusmenu_glib gtk >> $out/src/lib.rs
           '';
         };
 
