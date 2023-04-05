@@ -13,8 +13,8 @@
   }:
     {
       overlays.default = self: super: {
-        gir-rs = self.callPackage ./gir-rs.nix {};
-        rustdoc-stripper = self.callPackage ./rustdoc-stripper.nix {};
+        gir-rs = self.callPackage ./nix/gir-rs.nix {};
+        rustdoc-stripper = self.callPackage ./nix/rustdoc-stripper.nix {};
 
         libdbusmenu-gtk3 = super.libdbusmenu-gtk3.overrideAttrs (prev: {
           patches =
@@ -43,7 +43,7 @@
           hash = "sha256-p7XvEHxRRUntmKx+KLHUqRxARHNGq3GdTVpTL22fhU8=";
         };
 
-        buildGir = self.callPackage ./buildGir.nix {
+        buildGir = self.callPackage ./nix/buildGir.nix {
           defaultGirDirs = [
             self.gir-files
             (let
