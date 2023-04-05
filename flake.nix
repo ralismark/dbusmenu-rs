@@ -85,8 +85,23 @@
       };
       lib = pkgs.lib;
 
+      # version for us
+      ourVersion = "0.1.0";
+
       # gtkrs version we target
-      gtkrsVersion = "0.15";
+      gtkrsVersion = ">=0.15";
+
+      # crates.io metadata
+      metadata = {
+        license = "LGPL-3.0-only";
+        homepage = "https://github.com/ralismark/dbusmenu-rs";
+        repository = "https://github.com/ralismark/dbusmenu-rs";
+        readme = "../../README.md";
+        keywords = ["gtk-rs"];
+        categories = ["api-bindings" "gui"];
+      };
+
+      writeToml = (pkgs.formats.toml {}).generate;
 
       buildGir = args:
         pkgs.buildGir (lib.recursiveUpdate args {
@@ -109,7 +124,7 @@
 
       packages.dbusmenu-glib-sys = buildGir {
         pname = "dbusmenu-glib-sys";
-        version = "0.1.0";
+        version = ourVersion;
 
         girWorkMode = "sys";
         girToml.options = {
@@ -124,14 +139,23 @@
           ];
         };
 
-        fixupPhase = ''
+        fixupPhase = let
+          packageExtra = writeToml "Cargo.toml-package" (metadata
+            // {
+              description = "FFI bindings to dbusmenu-glib";
+              links = "dbusmenu-glib";
+            });
+        in ''
+          sed -i $out/Cargo.toml \
+            -e '/^\[package\]$/r${packageExtra}'
+
           sed -e '/icon_paths/s/c_char/glib::GStrv/g' -i $out/src/lib.rs
         '';
       };
 
       packages.dbusmenu-gtk3-sys = buildGir {
         pname = "dbusmenu-gtk3-sys";
-        version = "0.1.0";
+        version = ourVersion;
 
         girWorkMode = "sys";
         girToml.options = {
@@ -149,7 +173,16 @@
           ];
         };
 
-        fixupPhase = ''
+        fixupPhase = let
+          packageExtra = writeToml "Cargo.toml-package" (metadata
+            // {
+              description = "FFI bindings to dbusmenu-gtk3";
+              links = "dbusmenu-gtk3";
+            });
+        in ''
+          sed -i $out/Cargo.toml \
+            -e '/^\[package\]$/r${packageExtra}'
+
           sed -i $out/Cargo.toml \
             -e '/\[dependencies\]/adbusmenu-glib = { package = "dbusmenu-glib-sys", version = "${packages.dbusmenu-glib-sys.version}", path = "../dbusmenu-glib-sys" }' \
             -e 's/^\(dox = \[\)\(.*\]\)$/\1"dbusmenu-glib\/dox", \2/'
@@ -158,7 +191,7 @@
 
       packages.dbusmenu-glib = let
         pname = "dbusmenu-glib";
-        version = "0.1.0";
+        version = ourVersion;
       in
         buildGir {
           inherit pname version;
@@ -203,13 +236,16 @@
           assertInitialized = false;
 
           cargoToml = {
-            package = {
-              name = pname;
-              version = version;
-              edition = "2021";
+            package =
+              metadata
+              // {
+                name = pname;
+                description = "Rust bindings to dbusmenu-glib";
+                version = version;
+                edition = "2021";
 
-              metadata.docs.rs.features = ["dox"];
-            };
+                metadata.docs.rs.features = ["dox"];
+              };
 
             lib.name = "dbusmenu_glib";
             dependencies = {
@@ -234,7 +270,7 @@
 
       packages.dbusmenu-gtk3 = let
         pname = "dbusmenu-gtk3";
-        version = "0.1.0";
+        version = ourVersion;
       in
         buildGir {
           inherit pname version;
@@ -286,13 +322,16 @@
           ];
 
           cargoToml = {
-            package = {
-              name = pname;
-              version = version;
-              edition = "2021";
+            package =
+              metadata
+              // {
+                name = pname;
+                description = "Rust bindings to dbusmenu-gtk3";
+                version = version;
+                edition = "2021";
 
-              metadata.docs.rs.features = ["dox"];
-            };
+                metadata.docs.rs.features = ["dox"];
+              };
 
             lib.name = "dbusmenu_gtk3";
             dependencies = {
@@ -325,23 +364,17 @@
           '';
         };
 
-      packages.dbusmenu-cargoToml = (pkgs.formats.toml {}).generate "Cargo.toml" {
-        package = {
-          name = "dbusmenu";
-          version = "0.1.0";
-          edition = "2021";
+      packages.dbusmenu-cargoToml = writeToml "Cargo.toml" {
+        package =
+          metadata
+          // {
+            name = "dbusmenu";
+            description = "Rust bindings to dbusmenu (contains dbusmenu-glib and dbusmenu-gtk3)";
+            version = ourVersion;
+            edition = "2021";
 
-          metadata.docs.rs.features = ["dox"];
-
-          # crates.io metadata
-          license = "LGPL-3.0-only";
-          description = "Rust bindings for libdbusmenu";
-          homepage = "https://github.com/ralismark/dbusmenu-rs";
-          repository = "https://github.com/ralismark/dbusmenu-rs";
-          readme = "../../README.md";
-          keywords = ["gtk" "gtk-rs" "gnome" "GUI"];
-          categories = ["api-bindings" "gui"];
-        };
+            metadata.docs.rs.features = ["dox"];
+          };
 
         dependencies = {
           dbusmenu-glib = {
