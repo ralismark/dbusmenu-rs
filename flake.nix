@@ -364,35 +364,8 @@
           '';
         };
 
-      packages.dbusmenu-cargoToml = writeToml "Cargo.toml" {
-        package =
-          metadata
-          // {
-            name = "dbusmenu";
-            description = "Rust bindings to dbusmenu (contains dbusmenu-glib and dbusmenu-gtk3)";
-            version = ourVersion;
-            edition = "2021";
-
-            metadata.docs.rs.features = ["dox"];
-          };
-
-        dependencies = {
-          dbusmenu-glib = {
-            version = packages.dbusmenu-glib.version;
-            path = "../../result/dbusmenu-glib";
-          };
-          dbusmenu-gtk3 = {
-            version = packages.dbusmenu-gtk3.version;
-            path = "../../result/dbusmenu-gtk3";
-          };
-        };
-
-        features.dox = ["dbusmenu-glib/dox" "dbusmenu-gtk3/dox"];
-      };
-
       packages.default = pkgs.runCommand "dbusmenu-crates" {} ''
         mkdir $out
-        ln -s ${packages.dbusmenu-cargoToml} $out/dbusmenu-Cargo.toml
         ln -s ${packages.dbusmenu-glib-sys} $out/dbusmenu-glib-sys
         ln -s ${packages.dbusmenu-gtk3-sys} $out/dbusmenu-gtk3-sys
         ln -s ${packages.dbusmenu-glib} $out/dbusmenu-glib

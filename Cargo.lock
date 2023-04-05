@@ -101,14 +101,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbusmenu"
-version = "0.1.0"
-dependencies = [
- "dbusmenu-glib",
- "dbusmenu-gtk3",
-]
-
-[[package]]
 name = "dbusmenu-glib"
 version = "0.1.0"
 dependencies = [
