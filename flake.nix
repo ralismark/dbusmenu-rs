@@ -13,28 +13,7 @@
   }:
     {
       overlays.default = self: super: {
-        gir-rs = self.callPackage ./nix/gir-rs.nix {};
         rustdoc-stripper = self.callPackage ./nix/rustdoc-stripper.nix {};
-
-        libdbusmenu-gtk3 = super.libdbusmenu-gtk3.overrideAttrs (prev: {
-          patches =
-            (prev.patches or [])
-            ++ [
-              (builtins.toFile "requires-glib.patch" ''
-                --- a/libdbusmenu-glib/dbusmenu-glib-0.4.pc.in
-                +++ b/libdbusmenu-glib/dbusmenu-glib-0.4.pc.in
-                @@ -5,7 +5,7 @@
-                 includedir=@includedir@
-
-                 Cflags: -I''${includedir}/libdbusmenu-glib-0.4
-                -Requires:
-                +Requires: glib-2.0
-                 Libs: -L''${libdir} -ldbusmenu-glib
-
-                 Name: libdbusmenu-glib
-              '')
-            ];
-        });
 
         gir-files = self.fetchFromGitHub {
           owner = "gtk-rs";
